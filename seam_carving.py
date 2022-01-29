@@ -69,7 +69,7 @@ class seam_carving:
 
 sc = seam_carving("./data/img1.jpg")
 
-for i in range(500):
+for i in range(10):
     sc.get_path()
 
 cv2.imshow("res", sc.img)
