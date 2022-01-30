@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-import scipy
+from skimage import transform
 
 class seam_carving:
     def __init__(self, path) :
