@@ -1,20 +1,19 @@
 import numpy as np
 import cv2
-from parso import parse
 from tqdm import tqdm
-import matplotlib.pyplot as plt
-from skimage import transform
 import argparse
 class seam_carving:
-    def __init__(self, path) :
+    def __init__(self, path, method, ratio) :
         self.img_path = path
         self.img = cv2.imread(path)
         self.img_copy = np.copy(self.img)
-        self.method = "default"
+        self.method = method
+        self.ratio = ratio
         print(f"Image size is: {np.shape(self.img)[1]} x {np.shape(self.img)[0]}.")
 
     
     def get_energy(self, method='default'):
+        method=self.method
         energy_map = np.zeros_like(self.img)
         x_filter = np.array([[-1,0,1],
                     [-1,0,1],
@@ -44,6 +43,7 @@ class seam_carving:
         return energy_map
 
     def get_seam(self,method='default'):
+        method = self.method
         h,w,_ = np.shape(self.img)
 
 
@@ -90,7 +90,8 @@ class seam_carving:
         return M, path
     
     def get_path(self):
-        M, path = self.get_seam(method="improved")
+        method = self.method
+        M, path = self.get_seam(method=method)
         print(f"Image size is: {np.shape(self.img)[1]} x {np.shape(self.img)[0]}.")
         h,w,_ = np.shape(self.img)
         idx = np.argmin(M[-1,:])
@@ -100,38 +101,60 @@ class seam_carving:
             delete_mask[i,idx] = 1
             idx = path[i,idx]
         
-        cv2.imshow("removed_img",cv2.addWeighted(self.img,1,cv2.merge([zeros,zeros,delete_mask*255]),1,0))
-        cv2.waitKey(1)
+        if self.flag == 0:
+            cv2.imshow("Seam Carving",cv2.addWeighted(self.img,1,cv2.merge([zeros,zeros,delete_mask*255]),1,0))
+            cv2.waitKey(1)
+        else:
+            cv2.imshow("Seam Carving",cv2.addWeighted(self.img,1,cv2.merge([zeros,zeros,delete_mask*255]),1,0).T)
+            cv2.waitKey(1)
         delete_mask = cv2.merge([delete_mask, delete_mask, delete_mask])
 
-        # cv2.imshow("mask", delete_mask)
         self.img = self.img[delete_mask<1].reshape(h,w-1,3)
         return self.img
         
+    def opt(self):
+        self.flag = 0
+        h,w,_ = np.shape(self.img)
+
+        ratio0 = w/h
+        
+        if h>=w:
+            self.flag = 1
+        
+        if self.flag == 0: # h < w
+            w_new = int(self.ratio*h)
+            print(f"h<w object shape {h}x{w_new}")
+            print(w, w_new)
+            for i in range(w-w_new):
+                sc.get_path()
 
 
+        if self.flag == 1: # w < h
+            h_new = int(w/self.ratio)
+            self.img = self.img.T
+            print(f"w<h object shape {h_new}x{w}")
+            for i in range(h-h_new):
+                sc.get_path()
+            self.img = self.img.T
 
-
-
-sc = seam_carving("./data/img4.jpg")
-cv2.namedWindow("removed_img")
-cv2.imshow("removed_img",sc.img)
-
-for i in range(300):
-    sc.get_path()
-
-cv2.imshow("res", sc.img)
-cv2.imwrite("res4_imp.jpg",sc.img)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Implementation of Seam Carving and its improvements')
     parser.add_argument("-m",'--method',choices=['default','improved'])
     parser.add_argument("-d",'--dir',default='./data/img4.jpg')
-    parser.add_argument("-w",'--width')
-    parser.add_argument("-h",'--height')
+    parser.add_argument("-r",'--ratio',help='ratio=width/height')
     args = parser.parse_args()
+
     method = args.method
-    width = args.width
-    height = args.height
+    ratio = float(args.ratio)
+    path = args.dir
+
+    print(f"Image Path = {path}, method = {method}, ratio = {ratio}")
+    sc = seam_carving(path,method,ratio)
+
+    sc.opt()
+
+    cv2.imshow("Result", sc.img)
+    cv2.imwrite("result.jpg",sc.img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
