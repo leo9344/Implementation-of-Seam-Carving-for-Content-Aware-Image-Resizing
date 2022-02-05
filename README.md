@@ -16,3 +16,5 @@ https://arxiv.org/ftp/arxiv/papers/1903/1903.03180.pdf
 https://arxiv.org/ftp/arxiv/papers/1506/1506.04806.pdf
 
 S. Cho, H. Choi, Y. Matsushita and S. Lee, "Image retargeting using importance diffusion," 2009 16th IEEE International Conference on Image Processing (ICIP), 2009, pp. 977-980, doi: 10.1109/ICIP.2009.5413801.
+
+12 = Improved Seam Carving
